@@ -1,10 +1,12 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 import tensorflow as tf
 from tensorflow import keras
 
+sys.path.append('/eno/jdfeathe/pepe')
 import pepe
 from pepe.simulate import genSyntheticResponse
 from pepe.preprocess import circularMask
@@ -17,7 +19,7 @@ plt.rcParams["figure.dpi"] = 150
 
 dsFactor = 10
 
-batchsize = 200
+batchsize = 1000
 noiseLevel = .03
 
 modelPath = 'model'
@@ -30,7 +32,7 @@ convArgs = {"activation": 'relu',
 ############################
 
 if os.path.exists(modelPath):
-    model = keras.load_model(modelPath)
+    model = keras.models.load_model(modelPath)
 else:
     inputs = keras.Input(shape=(None,None,1))
     x = keras.layers.Conv2D(64, 5, **convArgs)(inputs)
@@ -80,7 +82,9 @@ def convertToLuminance(images):
 ########################3
 # Training
 
-lossArr = np.zeros(epochs)
+lossArr = []
+
+print('Initialization complete! Beginning training...')
 
 while True:
     # Generate the images
@@ -109,7 +113,10 @@ while True:
     ax[3].set_title('True Output')
     
     plt.savefig('current_result.png')
-    fig.close()
+    plt.close(fig)
 
     # Save the model
     model.save(modelPath)
+
+    # Print
+    print(f'Current loss: {lossArr[-1]}')
